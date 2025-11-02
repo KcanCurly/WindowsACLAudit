@@ -1,0 +1,5 @@
+.vs
+.vscode
+WindowsACLAudit/bin
+WindowsACLAudit/obj
+*\.tmp
