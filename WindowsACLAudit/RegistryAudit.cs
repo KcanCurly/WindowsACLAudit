@@ -11,6 +11,7 @@ class RegistryAudit
     private static List<string> _includeUsers = new List<string>();
     private static List<string> _includeGroups = new List<string>();
     private static List<string> _includePermissions = new List<string>();
+    private static List<string> _includeOwners = new List<string>();
     private static bool _debug = false;
 
     public static void Init()
@@ -21,6 +22,7 @@ class RegistryAudit
         _includeUsers = CLIArguments.Instance.Include_Users.ToList();
         _includeGroups = CLIArguments.Instance.Include_Groups.ToList();
         _includePermissions = CLIArguments.Instance.Include_Permissions.ToList();
+        _includeOwners = CLIArguments.Instance.Include_Owners.ToList();
         _debug = CLIArguments.Instance.Debug;
     }
     static void PrintAccessRule(RegistryAccessRule rule)
@@ -111,9 +113,23 @@ class RegistryAudit
 
             bool printed_key = false;
 
+            string owner = keyOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
 
             RegistrySecurity keySecurity = key.GetAccessControl(AccessControlSections.Access);
             AuthorizationRuleCollection rules = keySecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+            if (_includeOwners.Count > 0)
+            {
+                foreach (string o in _includeOwners)
+                {
+                    if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"Registry Key: {keyPath}");
+                        Console.WriteLine($"Owner: {owner}");
+                        return;
+                    }
+                }
+            }
             
             foreach (RegistryAccessRule rule in rules)
             {
@@ -123,7 +139,7 @@ class RegistryAudit
                     if (!printed_key)
                     {
                         Console.WriteLine($"Registry Key: {keyPath}");
-                        Console.WriteLine($"Owner: {keyOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown"}");
+                        Console.WriteLine($"Owner: {owner}");
                         Console.WriteLine($"Access Rules:");
                         printed_key = true;
                     }

@@ -9,6 +9,7 @@ class FileSystemAudit
     private static List<string> _includeUsers = new List<string>();
     private static List<string> _includeGroups = new List<string>();
     private static List<string> _includePermissions = new List<string>();
+    private static List<string> _includeOwners = new List<string>();
     private static bool _debug = false;
 
     public static void Init()
@@ -19,6 +20,7 @@ class FileSystemAudit
         _includeUsers = CLIArguments.Instance.Include_Users.ToList();
         _includeGroups = CLIArguments.Instance.Include_Groups.ToList();
         _includePermissions = CLIArguments.Instance.Include_Permissions.ToList();
+        _includeOwners = CLIArguments.Instance.Include_Owners.ToList();
         _debug = CLIArguments.Instance.Debug;
     }
 
@@ -134,8 +136,23 @@ class FileSystemAudit
 
             bool printed_key = false;
 
+            string owner = fileOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
+
             FileSecurity fileSecurity = fileInfo.GetAccessControl(AccessControlSections.Access);
             AuthorizationRuleCollection rules = fileSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+            if (_includeOwners.Count > 0)
+            {
+                foreach (string o in _includeOwners)
+                {
+                    if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"File: {filePath}");
+                        Console.WriteLine($"Owner: {owner}");
+                        return;
+                    }
+                }
+            }
 
             foreach (FileSystemAccessRule rule in rules)
             {
@@ -144,7 +161,7 @@ class FileSystemAudit
                     if (!printed_key)
                     {
                         Console.WriteLine($"File: {filePath}");
-                        Console.WriteLine($"Owner: {fileOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown"}");
+                        Console.WriteLine($"Owner: {owner}");
                         Console.WriteLine($"Access Rules:");
                         printed_key = true;
                     }

@@ -16,6 +16,8 @@ class CLIArguments
     public string[] Include_Users { get; set; }
     [Huzzah.OptionParameter(LongName = "group", ShortName = 'g', DefaultValue = new string[] {})]
     public string[] Include_Groups { get; set; }
-    [Huzzah.OptionParameter(LongName = "permission", DefaultValue = new string[] {})]
+    [Huzzah.OptionParameter(LongName = "permission", DefaultValue = new string[] { })]
     public string[] Include_Permissions { get; set; }
+    [Huzzah.OptionParameter(LongName = "owner", ShortName = 'o',DefaultValue = new string[] {})]
+    public string[] Include_Owners { get; set; }
 }

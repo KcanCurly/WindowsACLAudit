@@ -10,6 +10,7 @@ class ServiceAudit
     private static List<string> _includeUsers = new List<string>();
     private static List<string> _includeGroups = new List<string>();
     private static List<string> _includePermissions = new List<string>();
+    private static List<string> _includeOwners = new List<string>();
     private static bool _debug = false;
 
     public static void Init()
@@ -20,6 +21,7 @@ class ServiceAudit
         _includeUsers = CLIArguments.Instance.Include_Users.ToList();
         _includeGroups = CLIArguments.Instance.Include_Groups.ToList();
         _includePermissions = CLIArguments.Instance.Include_Permissions.ToList();
+        _includeOwners = CLIArguments.Instance.Include_Owners.ToList();
         _debug = CLIArguments.Instance.Debug;
     }
 
@@ -51,10 +53,28 @@ class ServiceAudit
                 {
                     RegistrySecurity serviceOwnerSecurity = key.GetAccessControl(AccessControlSections.Owner);
                     
+                    string owner = serviceOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
+
+                    if (_includeOwners.Count > 0)
+                    {
+                        foreach (string o in _includeOwners)
+                        {
+                            if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                            {
+                                Console.WriteLine($"Service: {service.ServiceName}");
+                                Console.WriteLine($"Display Name: {service.DisplayName}");
+                                Console.WriteLine($"Status: {service.Status}");
+                                Console.WriteLine($"Owner: {owner}");
+                                return;
+                            }
+                        }
+                    }
+
+
                     Console.WriteLine($"Service: {service.ServiceName}");
                     Console.WriteLine($"Display Name: {service.DisplayName}");
                     Console.WriteLine($"Status: {service.Status}");
-                    Console.WriteLine($"Owner: {serviceOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown"}");
+                    Console.WriteLine($"Owner: {owner}");
                     Console.WriteLine($"Access Rules:");
                     
                     RegistrySecurity serviceSecurity = key.GetAccessControl(AccessControlSections.Access);

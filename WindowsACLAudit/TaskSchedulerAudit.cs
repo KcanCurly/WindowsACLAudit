@@ -11,6 +11,7 @@ class TaskSchedulerAudit
     private static List<string> _includeUsers = new List<string>();
     private static List<string> _includeGroups = new List<string>();
     private static List<string> _includePermissions = new List<string>();
+    private static List<string> _includeOwners = new List<string>();
     private static bool _debug = false;
 
     public static void Init()
@@ -21,6 +22,7 @@ class TaskSchedulerAudit
         _includeUsers = CLIArguments.Instance.Include_Users.ToList();
         _includeGroups = CLIArguments.Instance.Include_Groups.ToList();
         _includePermissions = CLIArguments.Instance.Include_Permissions.ToList();
+        _includeOwners = CLIArguments.Instance.Include_Owners.ToList();
         _debug = CLIArguments.Instance.Debug;
     }
 
@@ -57,6 +59,36 @@ class TaskSchedulerAudit
 
             AuthorizationRuleCollection rules = taskSecurity.GetAccessRules(true, true, typeof(NTAccount));
 
+            string owner = taskSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
+
+            foreach (string o in _includeOwners)
+            {
+                if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"Task: {task.Name}");
+                    Console.WriteLine($"State: {task.State}");
+                    Console.WriteLine($"Enabled: {task.Enabled}");
+                    Console.WriteLine($"Runs As: {task.Definition.Principal.Account}");
+                    Console.WriteLine($"Startup: {task.Path}");
+
+                    Console.WriteLine($"Triggers:");
+                    foreach (var trigger in task.Definition.Triggers)
+                    {
+                        Console.WriteLine($"  Trigger Type: {trigger.TriggerType}");
+                        Console.WriteLine($"  Description: {task.Definition.RegistrationInfo.Description}");
+
+                        foreach (var action in task.Definition.Actions)
+                            Console.WriteLine($"  Action: {action}");
+
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine($"Security:");
+                    Console.WriteLine($"  Owner:{owner}");
+                    return;
+                }
+            }
+        
+
             bool printed_key = false;
 
             foreach (TaskAccessRule rule in rules)
@@ -83,7 +115,7 @@ class TaskSchedulerAudit
                             Console.WriteLine();
                         }
                         Console.WriteLine($"Security:");
-                        Console.WriteLine($"  Owner:{taskSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown"}");
+                        Console.WriteLine($"  Owner:{owner}");
                         Console.WriteLine($"Access Rules:");
                         printed_key = true;
                     }

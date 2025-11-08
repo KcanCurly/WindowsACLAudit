@@ -7,6 +7,7 @@ This tool audits FileSystem, Service, Registry, TaskScheduler ACL.
 --exclude # Exclude given paths for filesystem and registry audits
 --user # Only shows given users
 --group # Only shows given groups
+--owner # Only shows given owners
 --permission # Only shows given permission if rule has the flag of the permission
 --debug # Show debug messages 
 ```
