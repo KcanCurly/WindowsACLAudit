@@ -34,6 +34,10 @@ class WindowsSystemAudit
         {
             Console.WriteLine($"Included groups: {string.Join(", ", CLIArguments.Instance.Include_Groups.ToList())}");
         }
+        if (CLIArguments.Instance.Include_Owners.ToList().Count > 0)
+        {
+            Console.WriteLine($"Included owners: {string.Join(", ", CLIArguments.Instance.Include_Owners.ToList())}");
+        }
         if (CLIArguments.Instance.Include_Permissions.ToList().Count > 0)
         {
             Console.WriteLine($"Included permissions: {string.Join(", ", CLIArguments.Instance.Include_Permissions.ToList())}");

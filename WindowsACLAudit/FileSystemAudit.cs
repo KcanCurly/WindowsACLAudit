@@ -104,7 +104,23 @@ class FileSystemAudit
             DirectorySecurity dirSecurity = dirInfo.GetAccessControl(AccessControlSections.Access);
             AuthorizationRuleCollection rules = dirSecurity.GetAccessRules(true, true, typeof(NTAccount));
 
+            string owner = dirOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
+
             bool printed_key = false;
+
+            if (_includeOwners.Count > 0)
+            {
+                foreach (string o in _includeOwners)
+                {
+                    if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"Directory: {directoryPath}");
+                        Console.WriteLine($"Owner: {owner}");
+                        return;
+                    }
+                }
+                return;
+            }
 
             foreach (FileSystemAccessRule rule in rules)
             {
@@ -113,7 +129,7 @@ class FileSystemAudit
                     if (!printed_key)
                     {
                         Console.WriteLine($"Directory: {directoryPath}");
-                        Console.WriteLine($"Owner: {dirOwnerSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown"}");
+                        Console.WriteLine($"Owner: {owner}");
                         Console.WriteLine($"Access Rules:");
                         printed_key = true;
                     }
@@ -152,6 +168,7 @@ class FileSystemAudit
                         return;
                     }
                 }
+                return;
             }
 
             foreach (FileSystemAccessRule rule in rules)

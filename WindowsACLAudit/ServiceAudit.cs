@@ -68,6 +68,7 @@ class ServiceAudit
                                 return;
                             }
                         }
+                        return;
                     }
 
 

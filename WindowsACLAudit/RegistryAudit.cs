@@ -129,6 +129,7 @@ class RegistryAudit
                         return;
                     }
                 }
+                return;
             }
             
             foreach (RegistryAccessRule rule in rules)

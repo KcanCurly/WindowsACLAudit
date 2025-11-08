@@ -61,32 +61,38 @@ class TaskSchedulerAudit
 
             string owner = taskSecurity.GetOwner(typeof(NTAccount))?.Value ?? "Unknown";
 
-            foreach (string o in _includeOwners)
+
+            if (_includeOwners.Count > 0)
             {
-                if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
+                foreach (string o in _includeOwners)
                 {
-                    Console.WriteLine($"Task: {task.Name}");
-                    Console.WriteLine($"State: {task.State}");
-                    Console.WriteLine($"Enabled: {task.Enabled}");
-                    Console.WriteLine($"Runs As: {task.Definition.Principal.Account}");
-                    Console.WriteLine($"Startup: {task.Path}");
-
-                    Console.WriteLine($"Triggers:");
-                    foreach (var trigger in task.Definition.Triggers)
+                    if (owner.Equals(o, StringComparison.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine($"  Trigger Type: {trigger.TriggerType}");
-                        Console.WriteLine($"  Description: {task.Definition.RegistrationInfo.Description}");
+                        Console.WriteLine($"Task: {task.Name}");
+                        Console.WriteLine($"State: {task.State}");
+                        Console.WriteLine($"Enabled: {task.Enabled}");
+                        Console.WriteLine($"Runs As: {task.Definition.Principal.Account}");
+                        Console.WriteLine($"Startup: {task.Path}");
 
-                        foreach (var action in task.Definition.Actions)
-                            Console.WriteLine($"  Action: {action}");
+                        Console.WriteLine($"Triggers:");
+                        foreach (var trigger in task.Definition.Triggers)
+                        {
+                            Console.WriteLine($"  Trigger Type: {trigger.TriggerType}");
+                            Console.WriteLine($"  Description: {task.Definition.RegistrationInfo.Description}");
 
-                        Console.WriteLine();
+                            foreach (var action in task.Definition.Actions)
+                                Console.WriteLine($"  Action: {action}");
+
+                            Console.WriteLine();
+                        }
+                        Console.WriteLine($"Security:");
+                        Console.WriteLine($"  Owner:{owner}");
+                        return;
                     }
-                    Console.WriteLine($"Security:");
-                    Console.WriteLine($"  Owner:{owner}");
-                    return;
                 }
+                return;
             }
+
         
 
             bool printed_key = false;
